@@ -3,6 +3,8 @@ package com.fastcampus.projectloan.service;
 import com.fastcampus.projectloan.domain.Counsel;
 import com.fastcampus.projectloan.dto.CounselDTO.Request;
 import com.fastcampus.projectloan.dto.CounselDTO.Response;
+import com.fastcampus.projectloan.exception.BaseException;
+import com.fastcampus.projectloan.exception.ResultType;
 import com.fastcampus.projectloan.repository.CounselRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -25,5 +27,14 @@ public class CounselServiceImpl implements CounselService{
         Counsel created = counselRepository.save(counsel);
 
         return modelMapper.map(created, Response.class);
+    }
+
+    @Override
+    public Response get(Long counselId) {
+        Counsel counsel = counselRepository.findById(counselId).orElseThrow(() -> {
+            throw new BaseException(ResultType.SYSTEM_ERROR);
+        });
+
+        return modelMapper.map(counsel, Response.class);
     }
 }

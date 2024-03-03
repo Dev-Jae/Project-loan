@@ -87,7 +87,7 @@ public class CounselServiceTest {
     }
 
     @Test
-    void 상담_존재하면_입력값으로_수정_리턴(){
+    void 상담_존재하면_입력값으로_저장_리턴(){
         Long findId = 1L;
 
         Counsel entity = Counsel.builder()

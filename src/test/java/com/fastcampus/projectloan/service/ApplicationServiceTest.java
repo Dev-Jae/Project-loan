@@ -1,9 +1,16 @@
 package com.fastcampus.projectloan.service;
 
+import com.fastcampus.projectloan.domain.AcceptTerms;
 import com.fastcampus.projectloan.domain.Application;
+import com.fastcampus.projectloan.domain.Terms;
+import com.fastcampus.projectloan.dto.ApplicationDTO;
 import com.fastcampus.projectloan.dto.ApplicationDTO.Request;
 import com.fastcampus.projectloan.dto.ApplicationDTO.Response;
+import com.fastcampus.projectloan.exception.BaseException;
+import com.fastcampus.projectloan.repository.AcceptTermsRepository;
 import com.fastcampus.projectloan.repository.ApplicationRepository;
+import com.fastcampus.projectloan.repository.TermsRepository;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
@@ -12,8 +19,12 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,6 +38,12 @@ public class ApplicationServiceTest {
 
     @Mock
     private ApplicationRepository applicationRepository;
+
+    @Mock
+    private TermsRepository termsRepository;
+
+    @Mock
+    private AcceptTermsRepository acceptTermsRepository;
 
     @Spy
     private ModelMapper modelMapper;
@@ -108,5 +125,100 @@ public class ApplicationServiceTest {
 
         assertThat(entity.getIsDeleted()).isSameAs(true);
 
+    }
+
+    @Test
+    void 대출신청_약관_요청했을때(){
+        Terms entityA = Terms.builder()
+                .termsId(1L)
+                .name("대출 이용 약관1")
+                .termsDetailUrl("https://test_url1.com/test1")
+                .build();
+
+        Terms entityB = Terms.builder()
+                .termsId(2L)
+                .name("대출 이용 약관2")
+                .termsDetailUrl("https://test_url2.com/test2")
+                .build();
+
+        List<Long> acceptTerms = Arrays.asList(1L, 2L);
+
+        ApplicationDTO.AcceptTerms request = ApplicationDTO.AcceptTerms.builder()
+                .acceptTermsIds(acceptTerms)
+                .build();
+
+        Long findId = 1L;
+
+        when(applicationRepository.findById(findId)).thenReturn(
+                Optional.ofNullable(Application.builder().build())
+        );
+
+        when(termsRepository.findAll(Sort.by(Direction.ASC, "termsId"))).thenReturn(Arrays.asList(entityA, entityB));
+        when(acceptTermsRepository.save(ArgumentMatchers.any(AcceptTerms.class))).thenReturn(AcceptTerms.builder().build());
+
+        Boolean actual = applicationService.acceptTerms(findId, request);
+        assertThat(actual).isTrue();
+    }
+
+    @Test
+    void 대출신청_약관_요청_실패했을때(){
+        Terms entityA = Terms.builder()
+                .termsId(1L)
+                .name("대출 이용 약관1")
+                .termsDetailUrl("https://test_url1.com/test1")
+                .build();
+
+        Terms entityB = Terms.builder()
+                .termsId(2L)
+                .name("대출 이용 약관2")
+                .termsDetailUrl("https://test_url2.com/test2")
+                .build();
+
+        List<Long> acceptTerms = Arrays.asList(1L);
+
+        ApplicationDTO.AcceptTerms request = ApplicationDTO.AcceptTerms.builder()
+                .acceptTermsIds(acceptTerms)
+                .build();
+
+        Long findId = 1L;
+
+        when(applicationRepository.findById(findId)).thenReturn(
+                Optional.ofNullable(Application.builder().build())
+        );
+
+        when(termsRepository.findAll(Sort.by(Direction.ASC, "termsId"))).thenReturn(Arrays.asList(entityA, entityB));
+
+        Assertions.assertThrows(BaseException.class, () -> applicationService.acceptTerms(findId, request));
+    }
+
+    @Test
+    void 존재하지_않는_약괸을_동의_했을때(){
+        Terms entityA = Terms.builder()
+                .termsId(1L)
+                .name("대출 이용 약관1")
+                .termsDetailUrl("https://test_url1.com/test1")
+                .build();
+
+        Terms entityB = Terms.builder()
+                .termsId(2L)
+                .name("대출 이용 약관2")
+                .termsDetailUrl("https://test_url2.com/test2")
+                .build();
+
+        List<Long> acceptTerms = Arrays.asList(1L, 3L);
+
+        ApplicationDTO.AcceptTerms request = ApplicationDTO.AcceptTerms.builder()
+                .acceptTermsIds(acceptTerms)
+                .build();
+
+        Long findId = 1L;
+
+        when(applicationRepository.findById(findId)).thenReturn(
+                Optional.ofNullable(Application.builder().build())
+        );
+
+        when(termsRepository.findAll(Sort.by(Direction.ASC, "termsId"))).thenReturn(Arrays.asList(entityA, entityB));
+
+        Assertions.assertThrows(BaseException.class, () -> applicationService.acceptTerms(findId, request));
     }
 }

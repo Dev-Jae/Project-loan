@@ -13,6 +13,10 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
@@ -49,5 +53,24 @@ class TermsServiceTest {
 
     }
 
+    @Test
+    void 모든_약관을_리턴(){
+        Terms entity1 = Terms.builder()
+                .name("대출 이용 약관1")
+                .termsDetailUrl("https://test_url1.com/test1")
+                .build();
+        Terms entity2 = Terms.builder()
+                .name("대출 이용 약관2")
+                .termsDetailUrl("https://test_url2.com/test2")
+                .build();
+
+        List<Terms> list = new ArrayList<>(Arrays.asList(entity1, entity2));
+
+        when(termsRepository.findAll()).thenReturn(list);
+
+        List<Response> actual = termsService.getAll();
+
+        assertThat(actual.size()).isSameAs(list.size());
+    }
 
 }

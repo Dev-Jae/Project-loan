@@ -1,6 +1,8 @@
 package com.fastcampus.projectloan.service;
 
 import com.fastcampus.projectloan.domain.Application;
+import com.fastcampus.projectloan.exception.BaseException;
+import com.fastcampus.projectloan.exception.ResultType;
 import com.fastcampus.projectloan.repository.ApplicationRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -8,8 +10,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
-import static com.fastcampus.projectloan.dto.ApplicationDTO.Request;
-import static com.fastcampus.projectloan.dto.ApplicationDTO.Response;
+import com.fastcampus.projectloan.dto.ApplicationDTO.Request;
+import com.fastcampus.projectloan.dto.ApplicationDTO.Response;
 
 @Service
 @RequiredArgsConstructor
@@ -27,5 +29,14 @@ public class ApplicationServiceImpl implements ApplicationService{
         Application applied = applicationRepository.save(application);
 
         return modelMapper.map(applied, Response.class);
+    }
+
+    @Override
+    public Response get(Long applicationId) {
+        Application application = applicationRepository.findById(applicationId).orElseThrow(() -> {
+            throw new BaseException(ResultType.SYSTEM_ERROR);
+        });
+
+        return modelMapper.map(application, Response.class);
     }
 }

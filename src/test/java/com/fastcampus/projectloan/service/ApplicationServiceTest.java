@@ -1,8 +1,8 @@
 package com.fastcampus.projectloan.service;
 
 import com.fastcampus.projectloan.domain.Application;
-import com.fastcampus.projectloan.dto.ApplicationDTO;
 import com.fastcampus.projectloan.dto.ApplicationDTO.Request;
+import com.fastcampus.projectloan.dto.ApplicationDTO.Response;
 import com.fastcampus.projectloan.repository.ApplicationRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,10 +14,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
-import static com.fastcampus.projectloan.dto.ApplicationDTO.*;
-import static org.mockito.Mockito.when;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class ApplicationServiceTest {
@@ -54,5 +54,20 @@ public class ApplicationServiceTest {
         assertThat(actual.getHopeAmount()).isSameAs(entity.getHopeAmount());
         assertThat(actual.getName()).isSameAs(entity.getName());
 
+    }
+
+    @Test
+    void 어플리케이션_아이디가_존재하면_정보_리턴(){
+        Long findId = 1L;
+
+        Application entity = Application.builder()
+                        .applicationId(1L)
+                        .build();
+
+        when(applicationRepository.findById(findId)).thenReturn(Optional.ofNullable(entity));
+
+        Response actual = applicationService.get(findId);
+
+        assertThat(actual.getApplicationId()).isSameAs(findId);
     }
 }
